@@ -1,0 +1,110 @@
+{% extends 'base.html' %}
+
+{% block title %}Safety Guidelines - Smart Disaster Management{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Header -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4">
+        <div>
+            <h2 class="fw-bold mb-1"><i class="fas fa-book-medical me-2 text-info"></i>Disaster Safety & First Aid Guidelines</h2>
+            <p class="text-muted mb-0">Step-by-step preparedness, survival procedures, and emergency kit checklists</p>
+        </div>
+    </div>
+
+    <!-- Category Selector Tabs -->
+    <div class="card card-custom mb-4 shadow-sm">
+        <div class="card-body p-2">
+            <ul class="nav nav-pills nav-fill">
+                {% for g in guidelines %}
+                    <li class="nav-item">
+                        <a class="nav-link {% if g.disaster_type == selected_type %}active bg-primary{% endif %} fw-bold" 
+                           href="{{ url_for('guideline.guidelines', type=g.disaster_type) }}">
+                            {% if g.disaster_type == 'Flood' %}<i class="fas fa-water me-1"></i>{% endif %}
+                            {% if g.disaster_type == 'Fire' %}<i class="fas fa-fire me-1"></i>{% endif %}
+                            {% if g.disaster_type == 'Cyclone' %}<i class="fas fa-wind me-1"></i>{% endif %}
+                            {% if g.disaster_type == 'Earthquake' %}<i class="fas fa-house-damage me-1"></i>{% endif %}
+                            {% if g.disaster_type == 'Landslide' %}<i class="fas fa-mountain me-1"></i>{% endif %}
+                            {{ g.disaster_type }}
+                        </a>
+                    </li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+
+    {% if active_guideline %}
+    <div class="row g-4 mb-4">
+        <!-- Before Phase -->
+        <div class="col-md-4">
+            <div class="card card-custom h-100 shadow-sm border-info">
+                <div class="card-header bg-info text-white fw-bold py-3">
+                    <i class="fas fa-clock me-2"></i>BEFORE (Preparedness Phase)
+                </div>
+                <div class="card-body p-4">
+                    <p class="card-text text-secondary">{{ active_guideline.before_tips }}</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- During Phase -->
+        <div class="col-md-4">
+            <div class="card card-custom h-100 shadow-sm border-danger">
+                <div class="card-header bg-danger text-white fw-bold py-3">
+                    <i class="fas fa-exclamation-circle me-2"></i>DURING (Survival Phase)
+                </div>
+                <div class="card-body p-4">
+                    <p class="card-text text-secondary">{{ active_guideline.during_tips }}</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- After Phase -->
+        <div class="col-md-4">
+            <div class="card card-custom h-100 shadow-sm border-success">
+                <div class="card-header bg-success text-white fw-bold py-3">
+                    <i class="fas fa-check-circle me-2"></i>AFTER (Recovery Phase)
+                </div>
+                <div class="card-body p-4">
+                    <p class="card-text text-secondary">{{ active_guideline.after_tips }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- First Aid & Emergency Kit Row -->
+    <div class="row g-4">
+        <div class="col-md-6">
+            <div class="card card-custom shadow-sm h-100">
+                <div class="card-header-custom bg-dark text-white">
+                    <i class="fas fa-kit-medical me-2 text-danger"></i>First Aid Protocol
+                </div>
+                <div class="card-body p-4">
+                    <p class="card-text text-secondary">{{ active_guideline.first_aid }}</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card card-custom shadow-sm h-100 border-warning">
+                <div class="card-header-custom bg-warning text-dark fw-bold">
+                    <i class="fas fa-toolbox me-2"></i>Emergency Survival Kit Checklist
+                </div>
+                <div class="card-body p-4">
+                    <p class="text-muted small mb-3">Check off items in your physical emergency go-bag (saved locally):</p>
+                    {% set kit_items = active_guideline.emergency_kit.split(',') %}
+                    <div class="list-group list-group-flush">
+                        {% for item in kit_items %}
+                        <label class="list-group-item bg-transparent d-flex align-items-center cursor-pointer">
+                            <input class="form-check-input me-3 checklist-item" type="checkbox" data-id="{{ active_guideline.disaster_type }}_{{ loop.index }}">
+                            <span>{{ item.strip() }}</span>
+                        </label>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

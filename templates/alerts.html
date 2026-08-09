@@ -1,0 +1,119 @@
+{% extends 'base.html' %}
+
+{% block title %}Emergency Alerts - Smart Disaster Management{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Header -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4">
+        <div>
+            <h2 class="fw-bold mb-1"><i class="fas fa-bell me-2 text-danger"></i>Emergency Alerts Broadcast</h2>
+            <p class="text-muted mb-0">Official emergency warnings, affected zone advisories, and evacuation mandates</p>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Alerts Feed -->
+        <div class="col-lg-8">
+            {% for alert in alerts %}
+            <div class="card card-custom mb-4 shadow-sm border-{{ 'danger' if alert.severity_level in ['Emergency', 'High'] else 'warning' }}">
+                <div class="card-header bg-{{ 'danger' if alert.severity_level in ['Emergency', 'High'] else 'warning' }} text-white p-3 d-flex justify-content-between align-items-center">
+                    <span class="fw-bold fs-5"><i class="fas fa-exclamation-triangle me-2"></i>{{ alert.title }}</span>
+                    <span class="badge bg-white text-dark font-weight-bold">{{ alert.severity_level }}</span>
+                </div>
+                <div class="card-body p-4">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <span class="text-muted small d-block">AFFECTED ZONE:</span>
+                            <strong class="text-dark"><i class="fas fa-map-marker-alt text-danger me-1"></i> {{ alert.affected_area }}</strong>
+                        </div>
+                        <div class="col-md-6 text-md-end mt-2 mt-md-0">
+                            <span class="text-muted small d-block">ISSUED AT:</span>
+                            <strong><i class="far fa-clock me-1"></i> {{ alert.created_at.strftime('%b %d, %Y - %H:%M') }}</strong>
+                        </div>
+                    </div>
+
+                    <p class="card-text text-secondary mb-3">{{ alert.description }}</p>
+
+                    {% if alert.evacuation_instructions %}
+                        <div class="p-3 bg-light rounded border border-warning">
+                            <h6 class="fw-bold text-danger mb-1"><i class="fas fa-running me-2"></i>Mandatory Evacuation Orders:</h6>
+                            <p class="mb-0 text-dark small">{{ alert.evacuation_instructions }}</p>
+                        </div>
+                    {% endif %}
+                </div>
+                <div class="card-footer bg-white border-top-0 d-flex justify-content-between align-items-center">
+                    <span class="badge {% if alert.is_active %}bg-success{% else %}bg-secondary{% endif %}">
+                        Status: {{ 'Active Broadcast' if alert.is_active else 'Archived' }}
+                    </span>
+                    <a href="{{ url_for('shelter.shelters') }}" class="btn btn-sm btn-outline-danger">
+                        Find Relief Shelter <i class="fas fa-arrow-right ms-1"></i>
+                    </a>
+                </div>
+            </div>
+            {% else %}
+            <div class="card card-custom p-5 text-center">
+                <i class="fas fa-check-circle fa-3x text-success mb-3 d-block"></i>
+                <h4>No Active Emergency Broadcasts</h4>
+                <p class="text-muted">All regional warning indicators are currently clear.</p>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Emergency Contacts & Evacuation Sidebar -->
+        <div class="col-lg-4">
+            <div class="card card-custom shadow-sm mb-4">
+                <div class="card-header-custom bg-dark text-white">
+                    <i class="fas fa-phone-alt me-2 text-danger"></i>Emergency Hotlines
+                </div>
+                <div class="card-body p-4">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="bg-danger text-white rounded p-3 me-3">
+                            <i class="fas fa-ambulance fa-lg"></i>
+                        </div>
+                        <div>
+                            <div class="small text-muted fw-bold">NATIONAL DISASTER HELPLINE</div>
+                            <div class="fw-bold fs-5 text-danger">1-800-555-0199</div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="bg-warning text-dark rounded p-3 me-3">
+                            <i class="fas fa-fire-extinguisher fa-lg"></i>
+                        </div>
+                        <div>
+                            <div class="small text-muted fw-bold">FIRE & RESCUE DEPT</div>
+                            <div class="fw-bold fs-5">1-800-FIRE-HELP</div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="bg-info text-white rounded p-3 me-3">
+                            <i class="fas fa-user-nurse fa-lg"></i>
+                        </div>
+                        <div>
+                            <div class="small text-muted fw-bold">MEDICAL EMERGENCY</div>
+                            <div class="fw-bold fs-5">911 / 112</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card card-custom shadow-sm">
+                <div class="card-header-custom bg-primary text-white">
+                    <i class="fas fa-compass me-2"></i>Evacuation Quick Checklist
+                </div>
+                <div class="card-body p-4 small">
+                    <ul class="list-unstyled mb-0">
+                        <li class="mb-2"><i class="fas fa-check-square text-success me-2"></i> Grab emergency go-bag and essential medications.</li>
+                        <li class="mb-2"><i class="fas fa-check-square text-success me-2"></i> Shut off gas valves, main electric switches, and water supply.</li>
+                        <li class="mb-2"><i class="fas fa-check-square text-success me-2"></i> Follow official designated evacuation routes only.</li>
+                        <li class="mb-2"><i class="fas fa-check-square text-success me-2"></i> Do not cross flooded roads or downed power lines.</li>
+                        <li class="mb-0"><i class="fas fa-check-square text-success me-2"></i> Register arrival at nearest designated shelter.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

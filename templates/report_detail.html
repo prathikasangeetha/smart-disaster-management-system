@@ -1,0 +1,109 @@
+{% extends 'base.html' %}
+
+{% block title %}Report #{{ report.id }} - Smart Disaster Management{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="mb-3">
+        <a href="{{ url_for('main.dashboard') }}" class="text-decoration-none text-muted">
+            <i class="fas fa-arrow-left me-1"></i> Back to Dashboard
+        </a>
+    </div>
+
+    <div class="row g-4">
+        <!-- Main Report Information -->
+        <div class="col-lg-8">
+            <div class="card card-custom shadow-sm mb-4">
+                <div class="card-header-custom bg-dark text-white d-flex justify-content-between align-items-center">
+                    <span class="fw-bold"><i class="fas fa-file-alt me-2 text-danger"></i>Incident Report #{{ report.id }}</span>
+                    <span class="badge {% if report.status == 'Active' %}bg-danger{% elif report.status == 'Resolved' %}bg-success{% else %}bg-warning text-dark{% endif %}">
+                        {{ report.status }}
+                    </span>
+                </div>
+                <div class="card-body p-4">
+                    <div class="d-flex flex-wrap align-items-center justify-content-between pb-3 border-bottom mb-3">
+                        <div>
+                            <h3 class="fw-bold mb-1">{{ report.location }}</h3>
+                            <p class="text-muted mb-0">
+                                <i class="fas fa-exclamation-triangle text-warning me-1"></i> Disaster Type: <strong>{{ report.disaster_type }}</strong>
+                            </p>
+                        </div>
+                        <div class="text-md-end mt-2 mt-md-0">
+                            <span class="badge bg-secondary p-2 fs-6 mb-1">{{ report.severity }} Severity</span>
+                            <div class="small text-muted"><i class="far fa-clock me-1"></i> Logged: {{ report.date_time.strftime('%b %d, %Y - %H:%M') }}</div>
+                        </div>
+                    </div>
+
+                    <h5 class="fw-bold mb-2">Description</h5>
+                    <p class="card-text lead fs-6 text-secondary mb-4">{{ report.description }}</p>
+
+                    {% if report.latitude and report.longitude %}
+                        <div class="alert alert-light border mb-4">
+                            <i class="fas fa-map-marked-alt text-primary me-2"></i>
+                            <strong>GPS Coordinates:</strong> Latitude: {{ report.latitude }}, Longitude: {{ report.longitude }}
+                            <a href="https://maps.google.com/?q={{ report.latitude }},{{ report.longitude }}" target="_blank" class="ms-2 btn btn-xs btn-outline-primary py-0">
+                                Open Map <i class="fas fa-external-link-alt ms-1"></i>
+                            </a>
+                        </div>
+                    {% endif %}
+
+                    {% if report.image_path %}
+                        <h5 class="fw-bold mb-2">Uploaded Evidence Photo</h5>
+                        <div class="rounded border p-2 bg-light text-center mb-3">
+                            <img src="{{ url_for('static', filename='uploads/' + report.image_path) }}" alt="Disaster Evidence" class="img-fluid rounded" style="max-height: 400px; object-fit: contain;">
+                        </div>
+                    {% endif %}
+                </div>
+                <div class="card-footer bg-light d-flex justify-content-between align-items-center">
+                    <small class="text-muted"><i class="fas fa-user me-1"></i> Reported by Citizen: <strong>{{ report.reporter.full_name }}</strong></small>
+                    {% if current_user.is_authenticated and current_user.is_admin %}
+                        <a href="{{ url_for('admin.reports') }}" class="btn btn-sm btn-outline-danger">
+                            <i class="fas fa-tools me-1"></i> Manage in Admin Panel
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Risk Analysis Engine Card -->
+        <div class="col-lg-4">
+            <div class="card card-custom shadow-sm border-danger">
+                <div class="card-header-custom bg-danger text-white">
+                    <i class="fas fa-microchip me-2"></i>Automated Risk Analysis
+                </div>
+                <div class="card-body p-4">
+                    <div class="text-center py-3 border-bottom mb-3">
+                        <div class="small text-uppercase text-muted fw-bold mb-1">Assessed Threat Classification</div>
+                        <div class="display-6 fw-bold text-{{ analysis.badge_class }}">
+                            {{ report.risk_level }}
+                        </div>
+                        <span class="badge badge-{{ analysis.badge_class }} px-3 py-2 mt-2">
+                            <i class="fas fa-shield-virus me-1"></i> Threat Index: {{ analysis.risk_level }}
+                        </span>
+                    </div>
+
+                    <h6 class="fw-bold mb-2 text-dark"><i class="fas fa-shield-alt text-success me-2"></i>Actionable Safety Recommendation:</h6>
+                    <div class="p-3 bg-light rounded border border-start border-4 border-{{ analysis.badge_class }} text-secondary small">
+                        {{ report.safety_recommendation or analysis.recommendation }}
+                    </div>
+
+                    <hr class="my-4">
+
+                    <h6 class="fw-bold mb-3"><i class="fas fa-phone-volume text-danger me-2"></i>Emergency Direct Actions</h6>
+                    <div class="d-grid gap-2">
+                        <a href="{{ url_for('shelter.shelters') }}" class="btn btn-outline-primary">
+                            <i class="fas fa-hospital-user me-2"></i> Find Nearby Shelter
+                        </a>
+                        <a href="{{ url_for('alert.alerts') }}" class="btn btn-outline-warning text-dark">
+                            <i class="fas fa-bell me-2"></i> View Active Alerts
+                        </a>
+                        <a href="{{ url_for('guideline.guidelines', type=report.disaster_type) }}" class="btn btn-outline-info">
+                            <i class="fas fa-book-medical me-2"></i> Safety Guidelines for {{ report.disaster_type }}
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Smart Disaster Management and Alert System{% endblock %}</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+
+    <!-- Emergency Ticker Banner -->
+    <div class="top-emergency-banner text-center py-2 px-3">
+        <i class="fas fa-exclamation-triangle me-2"></i>
+        <span><strong>24/7 National Emergency Hotline: 1-800-555-EMERGENCY</strong> | Real-Time Situation Broadcast Active</span>
+    </div>
+
+    <!-- Navigation Header -->
+    <nav class="navbar navbar-expand-lg navbar-dark navbar-custom sticky-top">
+        <div class="container-fluid px-lg-4">
+            <a class="navbar-brand d-flex align-items-center" href="{{ url_for('main.index') }}">
+                <i class="fas fa-shield-alt fa-lg me-2 text-danger"></i>
+                <span>DisasterAlert<span class="text-danger">Pro</span></span>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain"
+                    aria-controls="navbarMain" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarMain">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.endpoint == 'main.index' %}active{% endif %}" href="{{ url_for('main.index') }}">
+                            <i class="fas fa-home me-1"></i> Home
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.endpoint == 'main.dashboard' or request.endpoint == 'main.search' %}active{% endif %}" href="{{ url_for('main.dashboard') }}">
+                            <i class="fas fa-chart-line me-1"></i> Analytics Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.endpoint == 'report.create_report' %}active{% endif %}" href="{{ url_for('report.create_report') }}">
+                            <i class="fas fa-bullhorn me-1 text-warning"></i> Report Incident
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.endpoint == 'shelter.shelters' %}active{% endif %}" href="{{ url_for('shelter.shelters') }}">
+                            <i class="fas fa-hospital-user me-1"></i> Shelters
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.endpoint == 'alert.alerts' %}active{% endif %}" href="{{ url_for('alert.alerts') }}">
+                            <i class="fas fa-bell me-1"></i> Live Alerts
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.endpoint == 'guideline.guidelines' %}active{% endif %}" href="{{ url_for('guideline.guidelines') }}">
+                            <i class="fas fa-book-medical me-1"></i> Safety Guidelines
+                        </a>
+                    </li>
+                </ul>
+
+                <!-- User Navigation -->
+                <ul class="navbar-nav ms-auto align-items-lg-center">
+                    {% if current_user.is_authenticated %}
+                        {% if current_user.is_admin %}
+                            <li class="nav-item me-lg-2">
+                                <a class="btn btn-outline-danger btn-sm" href="{{ url_for('admin.dashboard') }}">
+                                    <i class="fas fa-user-shield me-1"></i> Admin Portal
+                                </a>
+                            </li>
+                        {% endif %}
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-2" style="width: 32px; height: 32px; font-size: 0.85rem; font-weight: 700;">
+                                    {{ current_user.username[0]|upper }}
+                                </div>
+                                <span>{{ current_user.full_name }}</span>
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="userDropdown">
+                                <li><a class="dropdown-item" href="{{ url_for('auth.profile') }}"><i class="fas fa-user-circle me-2 text-primary"></i> Profile & Reports</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item text-danger" href="{{ url_for('auth.logout') }}"><i class="fas fa-sign-out-alt me-2"></i> Logout</a></li>
+                            </ul>
+                        </li>
+                    {% else %}
+                        <li class="nav-item me-2">
+                            <a class="btn btn-outline-light btn-sm px-3" href="{{ url_for('auth.login') }}">
+                                <i class="fas fa-sign-in-alt me-1"></i> Login
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="btn btn-primary btn-sm px-3" href="{{ url_for('auth.register') }}">
+                                <i class="fas fa-user-plus me-1"></i> Register
+                            </a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Flash Messages Container -->
+    <div class="container mt-3">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }} alert-dismissible fade show shadow-sm" role="alert">
+                        {% if category == 'success' %}
+                            <i class="fas fa-check-circle me-2"></i>
+                        {% elif category == 'danger' %}
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                        {% elif category == 'warning' %}
+                            <i class="fas fa-exclamation-circle me-2"></i>
+                        {% else %}
+                            <i class="fas fa-info-circle me-2"></i>
+                        {% endif %}
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+    </div>
+
+    <!-- Main Body Content -->
+    <main class="flex-grow-1">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="row g-4">
+                <div class="col-lg-4">
+                    <h5><i class="fas fa-shield-alt text-danger me-2"></i>Smart Disaster Management</h5>
+                    <p class="text-muted">Empowering communities with real-time incident reporting, risk severity analysis, shelter allocation, and instant emergency broadcasts.</p>
+                </div>
+                <div class="col-lg-2 col-6">
+                    <h5>Quick Links</h5>
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><a href="{{ url_for('main.dashboard') }}">Analytics</a></li>
+                        <li class="mb-2"><a href="{{ url_for('report.create_report') }}">Report Incident</a></li>
+                        <li class="mb-2"><a href="{{ url_for('shelter.shelters') }}">Find Shelters</a></li>
+                        <li class="mb-2"><a href="{{ url_for('alert.alerts') }}">Emergency Alerts</a></li>
+                    </ul>
+                </div>
+                <div class="col-lg-3 col-6">
+                    <h5>Safety Resources</h5>
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><a href="{{ url_for('guideline.guidelines', type='Flood') }}">Flood Preparedness</a></li>
+                        <li class="mb-2"><a href="{{ url_for('guideline.guidelines', type='Fire') }}">Fire Safety Protocol</a></li>
+                        <li class="mb-2"><a href="{{ url_for('guideline.guidelines', type='Cyclone') }}">Cyclone Readiness</a></li>
+                        <li class="mb-2"><a href="{{ url_for('guideline.guidelines', type='Earthquake') }}">Earthquake Guide</a></li>
+                    </ul>
+                </div>
+                <div class="col-lg-3">
+                    <h5>Emergency Helplines</h5>
+                    <ul class="list-unstyled text-muted">
+                        <li class="mb-2"><i class="fas fa-phone-alt me-2 text-danger"></i> Disaster Relief: 1-800-555-0199</li>
+                        <li class="mb-2"><i class="fas fa-ambulance me-2 text-warning"></i> Medical Service: 911 / 112</li>
+                        <li class="mb-2"><i class="fas fa-fire-extinguisher me-2 text-danger"></i> Fire Control: 1-800-FIRE-HELP</li>
+                        <li class="mb-2"><i class="fas fa-envelope me-2 text-info"></i> help@disasteralertpro.org</li>
+                    </ul>
+                </div>
+            </div>
+            <hr class="border-secondary my-4">
+            <div class="row align-items-center">
+                <div class="col-md-6 text-center text-md-start">
+                    <p class="mb-0 text-muted">&copy; 2026 Smart Disaster Management and Alert System. All Rights Reserved.</p>
+                </div>
+                <div class="col-md-6 text-center text-md-end mt-2 mt-md-0">
+                    <span class="badge bg-success"><i class="fas fa-server me-1"></i> System Online</span>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Bootstrap 5 Bundle JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Custom JS -->
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>
